@@ -9,6 +9,17 @@
         </encoder>
     </appender>
 
+    <appender name="STDOUT_2" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %magenta([%X{request-id}]) %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.mkjb.notes" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT_2"/>
+    </logger>
+
     <root level="info">
         <appender-ref ref="STDOUT" />
     </root>

@@ -1,7 +1,18 @@
 package com.mkjb.notes.domain.model;
 
-import io.micronaut.core.annotation.Introspected;
+public final class NoteContent {
+    private final String content;
 
-@Introspected
-public record NoteContent(String content) {
+    public NoteContent(String content) {
+        this.content = content;
+    }
+
+    public static NoteContent of(final String content) {
+        return new NoteContent(content);
+    }
+
+    public String value() {
+        return content;
+    }
+
 }
