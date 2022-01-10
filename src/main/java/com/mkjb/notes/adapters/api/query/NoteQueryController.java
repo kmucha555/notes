@@ -2,7 +2,6 @@ package com.mkjb.notes.adapters.api.query;
 
 import com.mkjb.notes.adapters.mongo.NoteDocument;
 import com.mkjb.notes.domain.model.NoteId;
-import com.mkjb.notes.domain.ports.NoteRepository;
 import com.mkjb.notes.shared.dto.RequestContext;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
@@ -14,9 +13,9 @@ import reactor.core.publisher.Mono;
 @Controller("/notes")
 class NoteQueryController {
 
-    private final NoteRepository repository;
+    private final NoteQueryRepository repository;
 
-    NoteQueryController(final NoteRepository repository) {
+    NoteQueryController(final NoteQueryRepository repository) {
         this.repository = repository;
     }
 

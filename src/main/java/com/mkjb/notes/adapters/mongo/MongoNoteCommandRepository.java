@@ -1,7 +1,7 @@
 package com.mkjb.notes.adapters.mongo;
 
 import com.mkjb.notes.domain.model.*;
-import com.mkjb.notes.domain.ports.NoteRepository;
+import com.mkjb.notes.domain.ports.NoteCommandRepository;
 import com.mkjb.notes.settings.mongo.MongoDbClient;
 import com.mkjb.notes.shared.exception.NoteException;
 import com.mongodb.client.model.Filters;
@@ -13,7 +13,6 @@ import org.bson.BsonValue;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
@@ -24,41 +23,18 @@ import java.util.UUID;
 import static com.mkjb.notes.settings.reactor.ContextLogger.logWithCtx;
 
 @Singleton
-class MongoNoteRepository implements NoteRepository {
+class MongoNoteCommandRepository implements NoteCommandRepository {
 
-    private static final Logger log = LoggerFactory.getLogger(MongoNoteRepository.class);
+    private static final Logger log = LoggerFactory.getLogger(MongoNoteCommandRepository.class);
 
     private final MongoDbClient mongoClient;
 
-    MongoNoteRepository(final MongoDbClient mongoClient) {
+    MongoNoteCommandRepository(final MongoDbClient mongoClient) {
         this.mongoClient = mongoClient;
     }
 
     @Override
-    public Mono<NoteDocument> find(final NoteId noteId) {
-        return Mono.deferContextual(ctx -> {
-                    final var filterByNoteId = Filters.eq(noteId.value());
-
-                    return Mono
-                            .from(mongoClient.collection().find(filterByNoteId))
-                            .onErrorMap(t -> NoteException.internal(ctx, noteId, t.getMessage()))
-                            .doOnEach(logWithCtx(noteDocument -> log.debug("Note with id '{}' fetched", noteDocument.getId())));
-                }
-        );
-    }
-
-    @Override
-    public Flux<NoteDocument> findAll() {
-        return Flux.deferContextual(ctx ->
-                Flux
-                        .from(mongoClient.collection().find())
-                        .onErrorMap(t -> NoteException.internal(ctx, t.getMessage()))
-                        .doOnEach(logWithCtx(noteDocument -> log.debug("Note with id '{}' fetched", noteDocument.getId())))
-        );
-    }
-
-    @Override
-    public Mono<String> create(final Note note) {
+    public Mono<NoteId> create(final Note note) {
         return Mono.deferContextual(ctx -> {
                     final var metadataDocument =
                             MetadataDocument
@@ -84,13 +60,14 @@ class MongoNoteRepository implements NoteRepository {
                             .map(InsertOneResult::getInsertedId)
                             .map(BsonValue::asString)
                             .map(BsonString::getValue)
-                            .doOnEach(logWithCtx(noteId -> log.info("New note with id '{}' created", noteId)));
+                            .doOnEach(logWithCtx(noteId -> log.info("New note with id '{}' created", noteId)))
+                            .map(NoteId::of);
                 }
         );
     }
 
     @Override
-    public Mono<NoteDocument> update(final NoteId noteId, final Note note) {
+    public Mono<Note> update(final NoteId noteId, final Note note) {
         return Mono.deferContextual(ctx -> {
                     final var metadataDocument =
                             MetadataDocument
@@ -117,7 +94,8 @@ class MongoNoteRepository implements NoteRepository {
                             .from(mongoClient.collection().findOneAndUpdate(filterBy, updateDocument))
                             .switchIfEmpty(Mono.error(() -> NoteException.notFound(ctx, noteId)))
                             .onErrorMap(t -> NoteException.internal(ctx, noteId, t.getMessage()))
-                            .doOnEach(logWithCtx(a -> log.info("Note with id '{}' successfully updated", noteId)));
+                            .doOnEach(logWithCtx(a -> log.info("Note with id '{}' successfully updated", noteId)))
+                            .map(NoteDocument::toDomain);
                 }
         );
 
