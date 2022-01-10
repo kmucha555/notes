@@ -1,21 +1,24 @@
 package com.mkjb.notes.adapters.mongo;
 
-import com.mkjb.notes.domain.model.ExpireAt;
-import com.mkjb.notes.domain.model.Note;
-import com.mkjb.notes.domain.model.NoteId;
+import com.mkjb.notes.domain.model.*;
 import com.mkjb.notes.domain.ports.NoteRepository;
 import com.mkjb.notes.settings.mongo.MongoDbClient;
+import com.mkjb.notes.shared.exception.NoteException;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertOneResult;
 import jakarta.inject.Singleton;
 import org.bson.BsonString;
 import org.bson.BsonValue;
+import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.validation.ClockProvider;
 import java.time.Instant;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static com.mkjb.notes.settings.reactor.ContextLogger.logWithCtx;
@@ -24,51 +27,45 @@ import static com.mkjb.notes.settings.reactor.ContextLogger.logWithCtx;
 class MongoNoteRepository implements NoteRepository {
 
     private static final Logger log = LoggerFactory.getLogger(MongoNoteRepository.class);
-    private static final String NOTES_COLLECTION = "notes";
 
     private final MongoDbClient mongoClient;
-    private final ClockProvider clockProvider;
 
-    MongoNoteRepository(final MongoDbClient mongoClient, final ClockProvider clockProvider) {
+    MongoNoteRepository(final MongoDbClient mongoClient) {
         this.mongoClient = mongoClient;
-        this.clockProvider = clockProvider;
     }
 
     @Override
     public Mono<NoteDocument> find(final NoteId noteId) {
-        return null;
-    }
-
-    @Override
-    public Flux<Note> findAll() {
-        return Flux.deferContextual(ctx ->
-                        Flux
-                                .from(mongoClient.collection(NOTES_COLLECTION, NoteDocument.class).find())
-//                            .onErrorMap(t -> NoteException.internal(context, t.getMessage()))
-                                .doOnEach(logWithCtx(noteDocument -> log.debug("Note with id '{}' fetched", noteDocument.getId())))
-                                .map(NoteDocument::toDomain)
-        );
-
-    }
-
-    @Override
-    public Mono<NoteId> create(final Note note) {
         return Mono.deferContextual(ctx -> {
-                    final var expireAt = note.getMetadata().expireAt().map(ExpireAt::value).orElse(null);
+                    final var filterByNoteId = Filters.eq(noteId.value());
 
+                    return Mono
+                            .from(mongoClient.collection().find(filterByNoteId))
+                            .onErrorMap(t -> NoteException.internal(ctx, noteId, t.getMessage()))
+                            .doOnEach(logWithCtx(noteDocument -> log.debug("Note with id '{}' fetched", noteDocument.getId())));
+                }
+        );
+    }
+
+    @Override
+    public Flux<NoteDocument> findAll() {
+        return Flux.deferContextual(ctx ->
+                Flux
+                        .from(mongoClient.collection().find())
+                        .onErrorMap(t -> NoteException.internal(ctx, t.getMessage()))
+                        .doOnEach(logWithCtx(noteDocument -> log.debug("Note with id '{}' fetched", noteDocument.getId())))
+        );
+    }
+
+    @Override
+    public Mono<String> create(final Note note) {
+        return Mono.deferContextual(ctx -> {
                     final var metadataDocument =
                             MetadataDocument
                                     .metadataDocument()
                                     .withCreatedAt(Instant.now())
-                                    .withExpiredAt(expireAt)
+                                    .withExpiredAt(getExpireAt(note.getMetadata()))
                                     .build();
-
-                    final var userDocuments =
-                            note
-                                    .getUsers()
-                                    .stream()
-                                    .map(u -> new UserDocument(u.email(), u.role().name()))
-                                    .toList();
 
                     final var noteDocument =
                             NoteDocument
@@ -76,19 +73,17 @@ class MongoNoteRepository implements NoteRepository {
                                     .withId(UUID.randomUUID().toString())
                                     .withTitle(note.getTitle().value())
                                     .withContent(note.getContent().value())
-                                    .withUsers(userDocuments)
+                                    .withUsers(getUserDocuments(note.getUsers()))
                                     .withMetadata(metadataDocument)
-                                    .withVersion(note.getVersion().value())
+                                    .withVersion(NoteVersion.INITIAL_VERSION.value())
                                     .build();
 
-
                     return Mono
-                            .from(mongoClient.collection(NOTES_COLLECTION, NoteDocument.class).insertOne(noteDocument))
-//                            .onErrorMap(t -> NoteException.internal(context, t.getMessage()))
+                            .from(mongoClient.collection().insertOne(noteDocument))
+                            .onErrorMap(t -> NoteException.internal(ctx, note.getId(), t.getMessage()))
                             .map(InsertOneResult::getInsertedId)
                             .map(BsonValue::asString)
                             .map(BsonString::getValue)
-                            .map(NoteId::of)
                             .doOnEach(logWithCtx(noteId -> log.info("New note with id '{}' created", noteId)));
                 }
         );
@@ -96,11 +91,67 @@ class MongoNoteRepository implements NoteRepository {
 
     @Override
     public Mono<NoteDocument> update(final NoteId noteId, final Note note) {
-        return null;
+        return Mono.deferContextual(ctx -> {
+                    final var metadataDocument =
+                            MetadataDocument
+                                    .metadataDocument()
+                                    .withModifiedAt(Instant.now())
+                                    .withExpiredAt(getExpireAt(note.getMetadata()))
+                                    .build();
+
+                    final var noteDocument =
+                            NoteDocument
+                                    .noteDocument()
+                                    .withId(noteId.value())
+                                    .withTitle(note.getTitle().value())
+                                    .withContent(note.getContent().value())
+                                    .withUsers(getUserDocuments(note.getUsers()))
+                                    .withMetadata(metadataDocument)
+                                    .withVersion(note.getVersion().increment())
+                                    .build();
+
+                    final var filterBy = Filters.and(Filters.eq(noteId.value()), Filters.eq("version", note.getVersion().value()));
+                    final var updateDocument = new Document("$set", noteDocument);
+
+                    return Mono
+                            .from(mongoClient.collection().findOneAndUpdate(filterBy, updateDocument))
+                            .switchIfEmpty(Mono.error(() -> NoteException.notFound(ctx, noteId)))
+                            .onErrorMap(t -> NoteException.internal(ctx, noteId, t.getMessage()))
+                            .doOnEach(logWithCtx(a -> log.info("Note with id '{}' successfully updated", noteId)));
+                }
+        );
+
     }
 
     @Override
     public Mono<Void> delete(final NoteId noteId) {
-        return null;
+        return Mono.deferContextual(ctx ->
+                        Mono
+                                .from(mongoClient.collection().deleteOne(Filters.eq(noteId.value())))
+                                .onErrorMap(t -> NoteException.internal(ctx, noteId, t.getMessage()))
+                                .filter(this::hasSuccessfullyDeletedDocument)
+                                .switchIfEmpty(Mono.error(() -> NoteException.notFound(ctx, noteId)))
+                                .doOnEach(logWithCtx(result -> log.info("Note with id '{}' successfully deleted", noteId)))
+                                .then()
+        );
     }
+
+    private boolean hasSuccessfullyDeletedDocument(final DeleteResult deleteResult) {
+        return deleteResult.getDeletedCount() > 0;
+    }
+
+    private List<UserDocument> getUserDocuments(final Set<NoteUser> users) {
+        return users
+                .stream()
+                .map(UserDocument::of)
+                .toList();
+    }
+
+    private Instant getExpireAt(final NoteMetadata metadata) {
+        return metadata
+                .expireAt()
+                .map(ExpireAt::value)
+                .orElse(null);
+    }
+
 }

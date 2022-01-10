@@ -1,13 +1,13 @@
 package com.mkjb.notes.adapters.api.query;
 
 import com.mkjb.notes.adapters.mongo.NoteDocument;
-import com.mkjb.notes.domain.model.Note;
 import com.mkjb.notes.domain.model.NoteId;
 import com.mkjb.notes.domain.ports.NoteRepository;
+import com.mkjb.notes.shared.dto.RequestContext;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.PathVariable;
-import jakarta.inject.Singleton;
+import io.micronaut.http.annotation.RequestBean;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -21,12 +21,16 @@ class NoteQueryController {
     }
 
     @Get
-    public Flux<NoteDocument> getNotes() {
-        return repository.findAll();
+    public Flux<NoteDocument> getNotes(@RequestBean RequestContext context) {
+        return repository
+                .findAll()
+                .contextWrite(context.reactorContext());
     }
 
     @Get("/{noteId}")
-    public Flux<NoteDocument> getNotesById(@PathVariable NoteId noteId) {
-        return repository.findAll();
+    public Mono<NoteDocument> getNoteById(@PathVariable String noteId, @RequestBean RequestContext context) {
+        return repository
+                .find(NoteId.of(noteId))
+                .contextWrite(context.reactorContext());
     }
 }

@@ -4,9 +4,13 @@ public final class NoteUser {
     private final String email;
     private final UserRole role;
 
-    public NoteUser(String email, UserRole role) {
+    private NoteUser(String email, UserRole role) {
         this.email = email;
         this.role = role;
+    }
+
+    public static NoteUser of(String email, UserRole role) {
+        return new NoteUser(email, role);
     }
 
     public String email() {

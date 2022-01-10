@@ -9,11 +9,11 @@ public final class Note {
     private final NoteTitle title;
     private final NoteContent content;
     private final Set<NoteUser> users;
-    private final Metadata metadata;
-    private final Version version;
+    private final NoteMetadata metadata;
+    private final NoteVersion version;
 
-    private Note(final NoteId id, final NoteTitle title, final NoteContent content, final Set<NoteUser> users,
-                 final Metadata metadata, final Version version) {
+    private Note(final NoteId id, final NoteTitle title, final NoteContent content,
+                 final Set<NoteUser> users, final NoteMetadata metadata, final NoteVersion version) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -38,11 +38,11 @@ public final class Note {
         return users;
     }
 
-    public Metadata getMetadata() {
+    public NoteMetadata getMetadata() {
         return metadata;
     }
 
-    public Version getVersion() {
+    public NoteVersion getVersion() {
         return version;
     }
 
@@ -64,10 +64,6 @@ public final class Note {
         return new StringJoiner(", ", Note.class.getSimpleName() + "[", "]")
                 .add("id=" + id)
                 .add("title=" + title)
-                .add("content=" + content)
-                .add("users=" + users)
-                .add("metadata=" + metadata)
-                .add("version=" + version)
                 .toString();
     }
 
@@ -80,8 +76,8 @@ public final class Note {
         private NoteTitle title;
         private NoteContent content;
         private Set<NoteUser> users;
-        private Metadata metadata;
-        private Version version;
+        private NoteMetadata metadata;
+        private NoteVersion version;
 
         public NoteBuilder() {
         }
@@ -106,12 +102,12 @@ public final class Note {
             return this;
         }
 
-        public NoteBuilder withMetadata(final Metadata metadata) {
+        public NoteBuilder withMetadata(final NoteMetadata metadata) {
             this.metadata = metadata;
             return this;
         }
 
-        public NoteBuilder withVersion(final Version version) {
+        public NoteBuilder withVersion(final NoteVersion version) {
             this.version = version;
             return this;
         }

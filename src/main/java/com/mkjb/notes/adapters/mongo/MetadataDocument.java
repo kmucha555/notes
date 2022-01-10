@@ -1,17 +1,29 @@
 package com.mkjb.notes.adapters.mongo;
 
+import com.mkjb.notes.domain.model.CreatedAt;
+import com.mkjb.notes.domain.model.ExpireAt;
+import com.mkjb.notes.domain.model.NoteMetadata;
+import com.mkjb.notes.domain.model.ModifiedAt;
+
 import java.time.Instant;
 
 public class MetadataDocument {
 
     private Instant createdAt;
     private Instant modifiedAt;
-    private Instant expiredAt;
+    private Instant expireAt;
 
-    public MetadataDocument(final Instant createdAt, final Instant modifiedAt, final Instant expiredAt) {
+    public MetadataDocument() {
+    }
+
+    public MetadataDocument(final Instant createdAt, final Instant modifiedAt, final Instant expireAt) {
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
-        this.expiredAt = expiredAt;
+        this.expireAt = expireAt;
+    }
+
+    public NoteMetadata toDomain() {
+        return NoteMetadata.of(ExpireAt.of(expireAt), CreatedAt.of(createdAt), ModifiedAt.of(modifiedAt));
     }
 
     public Instant getCreatedAt() {
@@ -30,12 +42,12 @@ public class MetadataDocument {
         this.modifiedAt = modifiedAt;
     }
 
-    public Instant getExpiredAt() {
-        return expiredAt;
+    public Instant getExpireAt() {
+        return expireAt;
     }
 
-    public void setExpiredAt(final Instant expiredAt) {
-        this.expiredAt = expiredAt;
+    public void setExpireAt(final Instant expiredAt) {
+        this.expireAt = expiredAt;
     }
 
     static MetadataDocumentBuilder metadataDocument() {
@@ -46,25 +58,25 @@ public class MetadataDocument {
 
         private Instant createdAt;
         private Instant modifiedAt;
-        private Instant expiredAt;
+        private Instant expireAt;
 
-         MetadataDocumentBuilder withCreatedAt(final Instant createdAt) {
+        MetadataDocumentBuilder withCreatedAt(final Instant createdAt) {
             this.createdAt = createdAt;
             return this;
         }
 
-         MetadataDocumentBuilder withModifiedAt(final Instant modifiedAt) {
+        MetadataDocumentBuilder withModifiedAt(final Instant modifiedAt) {
             this.modifiedAt = modifiedAt;
             return this;
         }
 
-         MetadataDocumentBuilder withExpiredAt(final Instant expiredAt) {
-            this.expiredAt = expiredAt;
+        MetadataDocumentBuilder withExpiredAt(final Instant expireAt) {
+            this.expireAt = expireAt;
             return this;
         }
 
-         MetadataDocument build() {
-            return new MetadataDocument(createdAt, modifiedAt, expiredAt);
+        MetadataDocument build() {
+            return new MetadataDocument(createdAt, modifiedAt, expireAt);
         }
 
     }

@@ -10,9 +10,9 @@ public interface NoteRepository {
 
     Mono<NoteDocument> find(NoteId noteId);
 
-    Flux<Note> findAll();
+    Flux<NoteDocument> findAll();
 
-    Mono<NoteId> create(Note note);
+    Mono<String> create(Note note);
 
     Mono<NoteDocument> update(NoteId noteId, Note note);
 

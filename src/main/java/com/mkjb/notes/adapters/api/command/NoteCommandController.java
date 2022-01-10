@@ -1,10 +1,9 @@
 package com.mkjb.notes.adapters.api.command;
 
-import com.mkjb.notes.settings.time.RequestContext;
-import io.micronaut.http.annotation.Body;
-import io.micronaut.http.annotation.Controller;
-import io.micronaut.http.annotation.Post;
-import io.micronaut.http.annotation.RequestBean;
+import com.mkjb.notes.shared.dto.RequestContext;
+import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MutableHttpResponse;
+import io.micronaut.http.annotation.*;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
@@ -19,11 +18,25 @@ class NoteCommandController {
     }
 
     @Post
-    public Mono<NoteIdResponse> createNote(@RequestBean RequestContext context, @Valid @Body NoteRequest noteRequest) {
+    public Mono<NoteIdResponse> createNote(@Valid @Body NoteRequest noteRequest, @RequestBean RequestContext context) {
         return noteService
                 .createNote(noteRequest)
-                .contextWrite(context.reactorContext())
-                .map(NoteIdResponse::of);
+                .contextWrite(context.reactorContext());
+    }
+
+    @Put("/{noteId}")
+    public Mono<NoteResponse> updateNote(@PathVariable String noteId, @Valid @Body NoteRequest noteRequest, @RequestBean RequestContext context) {
+        return noteService
+                .updateNote(noteId, noteRequest)
+                .contextWrite(context.reactorContext());
+    }
+
+    @Delete("/{noteId}")
+    public Mono<MutableHttpResponse<Object>> updateNote(@PathVariable String noteId, @RequestBean RequestContext context) {
+        return noteService
+                .deleteNote(noteId)
+                .thenReturn(HttpResponse.noContent())
+                .contextWrite(context.reactorContext());
     }
 
 }

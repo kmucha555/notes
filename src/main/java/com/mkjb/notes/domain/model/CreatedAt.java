@@ -6,8 +6,12 @@ public final class CreatedAt {
 
     private final Instant createdAt;
 
-    public CreatedAt(final Instant createdAt) {
+    private CreatedAt(final Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public static CreatedAt of(final Instant createdAt) {
+        return new CreatedAt(createdAt);
     }
 
     public Instant value() {

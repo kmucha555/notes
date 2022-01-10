@@ -6,8 +6,12 @@ public final class ModifiedAt {
 
     private final Instant modifiedAt;
 
-    public ModifiedAt(final Instant modifiedAt) {
+    private ModifiedAt(final Instant modifiedAt) {
         this.modifiedAt = modifiedAt;
+    }
+
+    public static ModifiedAt of(final Instant modifiedAt) {
+        return new ModifiedAt(modifiedAt);
     }
 
     public Instant value() {

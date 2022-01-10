@@ -4,6 +4,7 @@ import com.mkjb.notes.domain.model.*;
 import org.bson.codecs.pojo.annotations.BsonId;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class NoteDocument {
 
@@ -14,6 +15,9 @@ public class NoteDocument {
     private List<UserDocument> users;
     private MetadataDocument metadata;
     private int version;
+
+    public NoteDocument() {
+    }
 
     public NoteDocument(final String id, final String title, final String content,
                         final List<UserDocument> users, final MetadataDocument metadata,
@@ -27,14 +31,19 @@ public class NoteDocument {
     }
 
     public Note toDomain() {
+        final var domainUsers = users
+                .stream()
+                .map(UserDocument::toDomain)
+                .collect(Collectors.toUnmodifiableSet());
+
         return Note
                 .note()
                 .withId(NoteId.of(id))
                 .withTitle(NoteTitle.of(title))
                 .withContent(NoteContent.of(content))
-                .withUsers(NoteUser)
-                .withMetadata(Metadata.of(metadata))
-                .withVersion(Version.of(version))
+                .withUsers(domainUsers)
+                .withMetadata(metadata.toDomain())
+                .withVersion(NoteVersion.of(version))
                 .build();
     }
 

@@ -4,7 +4,7 @@ public class NoteTitle {
 
     private final String title;
 
-    public NoteTitle(final String title) {
+    private NoteTitle(final String title) {
         this.title = title;
     }
 

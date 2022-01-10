@@ -1,4 +1,4 @@
-package com.mkjb.notes.settings.time;
+package com.mkjb.notes.shared.dto;
 
 
 import io.micronaut.core.annotation.Creator;

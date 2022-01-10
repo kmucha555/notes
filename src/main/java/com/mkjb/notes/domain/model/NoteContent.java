@@ -3,7 +3,7 @@ package com.mkjb.notes.domain.model;
 public final class NoteContent {
     private final String content;
 
-    public NoteContent(String content) {
+    private NoteContent(String content) {
         this.content = content;
     }
 
