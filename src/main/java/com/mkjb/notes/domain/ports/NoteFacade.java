@@ -1,9 +1,10 @@
 package com.mkjb.notes.domain.ports;
 
-import com.mkjb.notes.domain.model.Note;
-import com.mkjb.notes.domain.model.NoteId;
+import com.mkjb.notes.domain.model.*;
 import jakarta.inject.Singleton;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Singleton
 public class NoteFacade {
@@ -14,12 +15,11 @@ public class NoteFacade {
         this.noteRepository = noteRepository;
     }
 
-
-    public Mono<NoteId> createNote(final Note note) {
-        return noteRepository.create(note);
+    public Mono<NoteId> createNote(final NoteTitle noteTitle, final NoteContent noteContent, final List<NoteUser> noteUsers, final ExpireAt expireAt) {
+        return noteRepository.create(noteTitle, noteContent, noteUsers, expireAt);
     }
 
-    public Mono<Note> updateNote(final NoteId noteId, final Note note) {
+    public Mono<Void> updateNote(final NoteId noteId, final Note note) {
         return noteRepository.update(noteId, note);
 
     }

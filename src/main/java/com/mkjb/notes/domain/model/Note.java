@@ -1,19 +1,19 @@
 package com.mkjb.notes.domain.model;
 
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.StringJoiner;
 
 public final class Note {
     private final NoteId id;
     private final NoteTitle title;
     private final NoteContent content;
-    private final Set<NoteUser> users;
+    private final List<NoteUser> users;
     private final NoteMetadata metadata;
     private final NoteVersion version;
 
     private Note(final NoteId id, final NoteTitle title, final NoteContent content,
-                 final Set<NoteUser> users, final NoteMetadata metadata, final NoteVersion version) {
+                 final List<NoteUser> users, final NoteMetadata metadata, final NoteVersion version) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -34,7 +34,7 @@ public final class Note {
         return content;
     }
 
-    public Set<NoteUser> getUsers() {
+    public List<NoteUser> getUsers() {
         return users;
     }
 
@@ -75,7 +75,7 @@ public final class Note {
         private NoteId id;
         private NoteTitle title;
         private NoteContent content;
-        private Set<NoteUser> users;
+        private List<NoteUser> users;
         private NoteMetadata metadata;
         private NoteVersion version;
 
@@ -97,7 +97,7 @@ public final class Note {
             return this;
         }
 
-        public NoteBuilder withUsers(final Set<NoteUser> users) {
+        public NoteBuilder withUsers(final List<NoteUser> users) {
             this.users = users;
             return this;
         }

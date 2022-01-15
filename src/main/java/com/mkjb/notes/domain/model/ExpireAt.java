@@ -1,6 +1,7 @@
 package com.mkjb.notes.domain.model;
 
 import java.time.Instant;
+import java.util.Optional;
 
 public final class ExpireAt {
 
@@ -14,8 +15,11 @@ public final class ExpireAt {
         return new ExpireAt(expireAt);
     }
 
-    public Instant value() {
-        return expireAt;
+    public Optional<Instant> value() {
+        return Optional.ofNullable(expireAt);
     }
 
+    public Instant getOrNull() {
+        return expireAt;
+    }
 }

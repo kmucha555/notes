@@ -31,6 +31,10 @@ public class NoteException extends RuntimeException {
         return new NoteException(context, null, HttpStatus.INTERNAL_SERVER_ERROR, message);
     }
 
+    public static NoteException conflict(final ContextView context, final NoteId noteId) {
+        return new NoteException(context, noteId, HttpStatus.CONFLICT, "The given note id version does not exist");
+    }
+
     public ContextView getContext() {
         return context;
     }

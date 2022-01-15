@@ -1,15 +1,15 @@
 package com.mkjb.notes.adapters.mongo;
 
-import com.mkjb.notes.domain.model.*;
-import org.bson.codecs.pojo.annotations.BsonId;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.bson.types.ObjectId;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
-public class NoteDocument {
+public final class NoteDocument {
 
-    @BsonId
-    private String id;
+    private ObjectId id;
     private String title;
     private String content;
     private List<UserDocument> users;
@@ -19,9 +19,9 @@ public class NoteDocument {
     public NoteDocument() {
     }
 
-    public NoteDocument(final String id, final String title, final String content,
-                        final List<UserDocument> users, final MetadataDocument metadata,
-                        final int version) {
+    NoteDocument(final ObjectId id, final String title, final String content,
+                 final List<UserDocument> users, final MetadataDocument metadata,
+                 final int version) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -30,28 +30,29 @@ public class NoteDocument {
         this.version = version;
     }
 
-    public Note toDomain() {
-        final var domainUsers = users
-                .stream()
-                .map(UserDocument::toDomain)
-                .collect(Collectors.toUnmodifiableSet());
+    Map<String, Object> toMap() {
+        return Map.of(
+                "id", id,
+                "title", title,
+                "content", content,
+                "users", users,
+//                "metadata", metadata,
+                "version", version
+        );
 
-        return Note
-                .note()
-                .withId(NoteId.of(id))
-                .withTitle(NoteTitle.of(title))
-                .withContent(NoteContent.of(content))
-                .withUsers(domainUsers)
-                .withMetadata(metadata.toDomain())
-                .withVersion(NoteVersion.of(version))
-                .build();
     }
 
-    public String getId() {
+    @JsonIgnore
+    public ObjectId getId() {
         return id;
     }
 
-    public void setId(final String id) {
+    @JsonGetter("id")
+    public String idAsString() {
+        return id.toString();
+    }
+
+    public void setId(final ObjectId id) {
         this.id = id;
     }
 
@@ -100,7 +101,7 @@ public class NoteDocument {
     }
 
     static final class NoteDocumentBuilder {
-        private String id;
+        private ObjectId id;
         private String title;
         private String content;
         private List<UserDocument> users;
@@ -110,7 +111,7 @@ public class NoteDocument {
         private NoteDocumentBuilder() {
         }
 
-        NoteDocumentBuilder withId(final String id) {
+        NoteDocumentBuilder withId(final ObjectId id) {
             this.id = id;
             return this;
         }

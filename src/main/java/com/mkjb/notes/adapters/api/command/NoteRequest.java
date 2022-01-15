@@ -6,31 +6,26 @@ import io.micronaut.core.annotation.Nullable;
 
 import javax.validation.constraints.*;
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Introspected
-record NoteRequest(@Nullable String title, @NotBlank String content, @NotEmpty Set<User> users,
+record NoteRequest(@NotBlank String title, @NotBlank String content, @NotEmpty Set<User> users,
                    @Nullable @Future Instant expireAt, @Min(0) @Max(Integer.MAX_VALUE) int version) {
 
     Note toDomain() {
-        final Set<NoteUser> domainUsers = toDomainUsers();
-
         return Note
                 .note()
                 .withTitle(NoteTitle.of(title))
                 .withContent(NoteContent.of(content))
-                .withUsers(domainUsers)
+                .withUsers(toDomainUsers())
                 .withMetadata(NoteMetadata.of(ExpireAt.of(expireAt)))
                 .withVersion(NoteVersion.of(version))
                 .build();
     }
 
-    private Set<NoteUser> toDomainUsers() {
-        return users
-                .stream()
-                .map(User::toDomain)
-                .collect(Collectors.toUnmodifiableSet());
+    private List<NoteUser> toDomainUsers() {
+        return users.stream().map(User::toDomain).toList();
     }
 
     @Introspected

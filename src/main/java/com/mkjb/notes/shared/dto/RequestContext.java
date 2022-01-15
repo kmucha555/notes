@@ -7,13 +7,16 @@ import io.micronaut.http.annotation.Header;
 import io.micronaut.http.annotation.QueryValue;
 import reactor.util.context.Context;
 import reactor.util.context.ContextView;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 import javax.validation.constraints.Positive;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.StringJoiner;
-import java.util.UUID;
 
 @Introspected
-public class RequestContext  {
+public class RequestContext {
 
     @Header(defaultValue = "")
     private final String requestId;
@@ -26,13 +29,12 @@ public class RequestContext  {
     @QueryValue(defaultValue = "20")
     private final int pageSize;
 
-    @QueryValue(defaultValue = "ASC")
-    private final Sort sort;
+    @QueryValue(defaultValue = "title:ASC")
+    private final String sort;
 
     @Creator
-    RequestContext(final String requestId, final int pageNumber, final int pageSize, final Sort sort) {
-
-        this.requestId = requestId.isBlank() ? UUID.randomUUID().toString() : requestId;
+    RequestContext(final String requestId, final int pageNumber, final int pageSize, final String sort) {
+        this.requestId = requestId.isBlank() ? String.valueOf(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)) : requestId;
         this.pageNumber = pageNumber;
         this.pageSize = pageSize;
         this.sort = sort;
@@ -54,17 +56,22 @@ public class RequestContext  {
         return pageSize;
     }
 
-    public Sort getSort() {
+    public String getSort() {
         return sort;
+    }
+
+    public Tuple2<SortFieldName, SortOrder> sortQuery() {
+        final var splittedSortQuery = sort.split(":");
+        final var sortFieldName = SortFieldName.of(splittedSortQuery[0]);
+        final var sortOrder = SortOrder.of(splittedSortQuery[1]);
+
+        return Tuples.of(sortFieldName, sortOrder);
     }
 
     @Override
     public String toString() {
         return new StringJoiner(", ", RequestContext.class.getSimpleName() + "[", "]")
                 .add("requestId='" + requestId + "'")
-                .add("pageNumber=" + pageNumber)
-                .add("pageSize=" + pageSize)
-                .add("sort=" + sort)
                 .toString();
     }
 }

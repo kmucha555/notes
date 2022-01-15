@@ -1,6 +1,7 @@
 package com.mkjb.notes.domain.model;
 
 import java.time.Instant;
+import java.util.Optional;
 
 public final class ModifiedAt {
 
@@ -14,8 +15,8 @@ public final class ModifiedAt {
         return new ModifiedAt(modifiedAt);
     }
 
-    public Instant value() {
-        return modifiedAt;
+    public Optional<Instant> value() {
+        return Optional.ofNullable(modifiedAt);
     }
 
 }

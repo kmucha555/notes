@@ -25,14 +25,15 @@ class NoteCommandController {
     }
 
     @Put("/{noteId}")
-    public Mono<NoteResponse> updateNote(@PathVariable String noteId, @Valid @Body NoteRequest noteRequest, @RequestBean RequestContext context) {
+    public Mono<MutableHttpResponse<Object>> updateNote(@PathVariable String noteId, @Valid @Body NoteRequest noteRequest, @RequestBean RequestContext context) {
         return noteService
                 .updateNote(noteId, noteRequest)
+                .thenReturn(HttpResponse.noContent())
                 .contextWrite(context.reactorContext());
     }
 
     @Delete("/{noteId}")
-    public Mono<MutableHttpResponse<Object>> updateNote(@PathVariable String noteId, @RequestBean RequestContext context) {
+    public Mono<MutableHttpResponse<Object>> deleteNote(@PathVariable String noteId, @RequestBean RequestContext context) {
         return noteService
                 .deleteNote(noteId)
                 .thenReturn(HttpResponse.noContent())

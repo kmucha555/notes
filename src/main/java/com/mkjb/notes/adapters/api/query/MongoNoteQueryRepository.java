@@ -3,8 +3,8 @@ package com.mkjb.notes.adapters.api.query;
 import com.mkjb.notes.adapters.mongo.NoteDocument;
 import com.mkjb.notes.domain.model.NoteId;
 import com.mkjb.notes.settings.mongo.MongoDbClient;
+import com.mkjb.notes.shared.dto.RequestContext;
 import com.mkjb.notes.shared.exception.NoteException;
-import com.mongodb.client.model.Filters;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,25 +26,30 @@ class MongoNoteQueryRepository implements NoteQueryRepository {
 
     @Override
     public Mono<NoteDocument> find(final NoteId noteId) {
-        return Mono.deferContextual(ctx -> {
-                    final var filterByNoteId = Filters.eq(noteId.value());
-
-                    return Mono
-                            .from(mongoClient.collection().find(filterByNoteId))
-                            .onErrorMap(t -> NoteException.internal(ctx, noteId, t.getMessage()))
-                            .doOnEach(logWithCtx(noteDocument -> log.debug("Note with id '{}' fetched", noteDocument.getId())));
-                }
+        return Mono.deferContextual(ctx ->
+                Mono
+                        .from(mongoClient.collection().find(findByNoteId(noteId)))
+                        .onErrorMap(t -> NoteException.internal(ctx, noteId, t.getMessage()))
+                        .doOnEach(logWithCtx(noteDocument -> log.debug("Note with id '{}' fetched", noteDocument.getId())))
         );
     }
 
     @Override
     public Flux<NoteDocument> findAll() {
-        return Flux.deferContextual(ctx ->
-                Flux
-                        .from(mongoClient.collection().find())
-                        .onErrorMap(t -> NoteException.internal(ctx, t.getMessage()))
-                        .doOnEach(logWithCtx(noteDocument -> log.debug("Note with id '{}' fetched", noteDocument.getId())))
-        );
+        return Flux.deferContextual(ctx -> {
+            final var context = ctx.get(RequestContext.class);
+            return Flux
+                    .from(
+                            mongoClient
+                                    .collection()
+                                    .find()
+                                    .sort(sort(context))
+                                    .skip(pageNumber(context))
+                                    .limit(pageSize(context))
+                    )
+                    .onErrorMap(t -> NoteException.internal(ctx, t.getMessage()))
+                    .doOnEach(logWithCtx(noteDocument -> log.debug("Note with id '{}' fetched", noteDocument.getId())));
+        });
     }
 
 }

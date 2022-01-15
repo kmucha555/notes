@@ -17,6 +17,6 @@ class TestTimeProvider implements ClockProvider {
 
     @Override
     public Clock getClock() {
-        return Clock.fixed(Instant.parse("2022-06-01T21:00:00Z"), ZoneOffset.UTC);
+        return Clock.fixed(Instant.parse("2021-06-01T21:00:00Z"), ZoneOffset.UTC);
     }
 }

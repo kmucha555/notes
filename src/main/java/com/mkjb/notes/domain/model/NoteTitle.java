@@ -1,6 +1,6 @@
 package com.mkjb.notes.domain.model;
 
-public class NoteTitle {
+public final class NoteTitle {
 
     private final String title;
 

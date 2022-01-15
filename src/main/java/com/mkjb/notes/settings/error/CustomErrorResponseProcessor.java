@@ -19,11 +19,7 @@ class CustomErrorResponseProcessor implements ErrorResponseProcessor<ErrorRespon
         final var message = errorContext.getRootCause().map(Throwable::getMessage).orElse("Error occurred");
         final var status = response.getStatus().getReason();
 
-        final var errorResponse = new ErrorResponse(
-                path,
-                status,
-                message
-        );
+        final var errorResponse = new ErrorResponse(path, status, message);
 
         return response.body(errorResponse).contentType(MediaType.APPLICATION_JSON_TYPE);
     }

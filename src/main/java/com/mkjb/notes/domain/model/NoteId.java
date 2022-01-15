@@ -1,5 +1,7 @@
 package com.mkjb.notes.domain.model;
 
+import org.bson.types.ObjectId;
+
 import java.util.Objects;
 
 public final class NoteId {
@@ -16,6 +18,10 @@ public final class NoteId {
 
     public String value() {
         return id;
+    }
+
+    public ObjectId toObjectId() {
+        return new ObjectId(id);
     }
 
     @Override

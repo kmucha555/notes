@@ -3,7 +3,7 @@ package com.mkjb.notes.adapters.mongo;
 import com.mkjb.notes.domain.model.NoteUser;
 import com.mkjb.notes.domain.model.UserRole;
 
-public class UserDocument {
+public final class UserDocument {
 
     private String email;
     private String role;
@@ -11,7 +11,7 @@ public class UserDocument {
     public UserDocument() {
     }
 
-    public UserDocument(final String email, final String role) {
+    UserDocument(final String email, final String role) {
         this.email = email;
         this.role = role;
     }
