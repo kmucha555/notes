@@ -40,4 +40,12 @@ class NoteCommandController {
                 .contextWrite(context.reactorContext());
     }
 
+    @Delete
+    public Mono<MutableHttpResponse<Object>> deleteNotes(@RequestBean RequestContext context) {
+        return noteService
+                .deleteNotes()
+                .thenReturn(HttpResponse.noContent())
+                .contextWrite(context.reactorContext());
+    }
+
 }

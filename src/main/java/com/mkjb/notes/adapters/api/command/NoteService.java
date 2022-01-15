@@ -35,4 +35,8 @@ class NoteService {
     public Mono<Void> deleteNote(final String noteId) {
         return noteFacade.deleteNote(NoteId.of(noteId));
     }
+
+    public Mono<Void> deleteNotes() {
+        return noteFacade.deleteNotes();
+    }
 }

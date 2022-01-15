@@ -1,6 +1,9 @@
 package com.mkjb.notes.shared.exception;
 
+import com.mkjb.notes.domain.model.UserRole;
 import io.micronaut.http.HttpStatus;
+
+import java.util.Arrays;
 
 public class NoteValidationException extends RuntimeException {
 
@@ -10,6 +13,7 @@ public class NoteValidationException extends RuntimeException {
     public static final NoteValidationException NOTE_TITLE_TOO_LONG = badRequest("Note title too long");
     public static final NoteValidationException NOTE_CONTENT_BLANK = badRequest("Note content must not be empty");
     public static final NoteValidationException NOTE_CONTENT_TOO_LONG = badRequest("Note content too long");
+    public static final NoteValidationException NOTE_USER_ROLE_NOT_EXISTS = badRequest("User role is not supported Supported roles %s".formatted(Arrays.stream(UserRole.values()).toList()));
 
     private final HttpStatus status;
     private final String message;

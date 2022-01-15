@@ -15,6 +15,8 @@ public interface NoteCommandRepository {
 
     Mono<Void> delete(NoteId noteId);
 
+    Mono<Void> delete();
+
     default Bson filterByNoteId(NoteId noteId) {
         return Filters.eq(noteId.toObjectId());
     }

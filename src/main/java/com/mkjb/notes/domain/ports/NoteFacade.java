@@ -27,4 +27,8 @@ public class NoteFacade {
     public Mono<Void> deleteNote(final NoteId noteId) {
         return noteRepository.delete(noteId);
     }
+
+    public Mono<Void> deleteNotes() {
+        return noteRepository.delete();
+    }
 }

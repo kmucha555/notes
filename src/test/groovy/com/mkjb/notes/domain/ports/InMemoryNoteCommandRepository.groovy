@@ -9,10 +9,6 @@ import java.util.concurrent.ConcurrentHashMap
 class InMemoryNoteCommandRepository implements NoteCommandRepository {
     private ConcurrentHashMap<NoteId, Note> repository = new ConcurrentHashMap<>()
 
-    def getById(NoteId noteId) {
-       return repository.get(noteId)
-    }
-
     @Override
     Mono<NoteId> create(final NoteTitle noteTitle, final NoteContent noteContent, final List<NoteUser> noteUsers, final ExpireAt expireAt) {
         def noteId = NoteId.of(ObjectId.get().toString())
@@ -35,12 +31,30 @@ class InMemoryNoteCommandRepository implements NoteCommandRepository {
     @Override
     Mono<Void> update(final NoteId noteId, final Note note) {
         repository.put(noteId, note)
-        return Mono.just(noteId).then()
+        return Mono.empty().then()
     }
 
     @Override
     Mono<Void> delete(final NoteId noteId) {
         repository.remove(noteId)
-        return Mono.just(noteId).then()
+        return Mono.empty().then()
+    }
+
+    @Override
+    Mono<Void> delete() {
+        repository.clear()
+        return Mono.empty().then()
+    }
+
+    def getById(NoteId noteId) {
+        return repository.get(noteId)
+    }
+
+    def size() {
+        return repository.size()
+    }
+
+    def clear() {
+        repository.clear()
     }
 }

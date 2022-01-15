@@ -34,7 +34,7 @@ record NoteRequest(String title, String content,
     record User(@Email String email, @NotBlank String role) {
 
         NoteUser toDomain() {
-            return NoteUser.of(email, UserRole.valueOf(role));
+            return NoteUser.of(email, role);
         }
 
     }

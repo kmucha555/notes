@@ -7,30 +7,76 @@ import spock.lang.Specification
 
 import java.time.Instant
 
-class NoteServiceSpec extends Specification {
+class NoteServiceSpec extends Specification implements NoteCommandTestData {
 
-    def 'aaa'() {
-        given:
-        def repository = new InMemoryNoteCommandRepository()
-        def noteFacade = new NoteFacade(repository)
-        def expireAt = Instant.parse("2023-06-01T21:00:00Z")
-        def noteService = new NoteService(noteFacade)
+    def repository = new InMemoryNoteCommandRepository()
+    def noteFacade = new NoteFacade(repository)
+    def noteService = new NoteService(noteFacade)
 
-        def user = new NoteRequest.User('john.doe@supernote.com', 'OWNER')
-        def noteRequest = new NoteRequest('Test Note', 'Lorem ipsum', Set.of(user), expireAt, 0)
-
+    def 'should create a note'() {
         when:
-        def noteId = noteService.createNote(noteRequest).block().id()
+        def noteId = noteService.createNote(createNoteRequest).block().id()
 
         then:
-        def actualNote = repository.getById(NoteId.of(noteId))
+        def createdNote = repository.getById(NoteId.of(noteId))
 
         verifyAll {
-            actualNote.title.value() == 'Test Note'
-            actualNote.content.value() == 'Lorem ipsum'
-            actualNote.metadata.expireAtValue().value().get() == Instant.parse("2023-06-01T21:00:00Z")
-            actualNote.version.value() == 0
+            createdNote.title.value() == 'Test Note'
+            createdNote.content.value() == 'Lorem ipsum'
+            createdNote.users.get(0).emailValue() == 'john.doe@supernote.com'
+            createdNote.users.get(0).roleValue().toString() == 'OWNER'
+            createdNote.version.value() == 0
+            createdNote.metadata.expireAtValue().value().get() == Instant.parse("2023-06-01T21:00:00Z")
         }
+    }
+
+    def 'should update a note'() {
+        given:
+        def noteId = noteService.createNote(createNoteRequest).block().id()
+
+        when:
+        noteService.updateNote(noteId, updateNoteRequest).block()
+
+        then:
+        def updatedNote = repository.getById(NoteId.of(noteId))
+
+        verifyAll {
+            updatedNote.title.value() == 'Updated Test Note'
+            updatedNote.content.value() == 'Updated Lorem ipsum'
+            updatedNote.users.get(0).emailValue() == 'john.doe@supernote.com'
+            updatedNote.users.get(0).roleValue().toString() == 'OWNER'
+            updatedNote.version.value() == 0
+            updatedNote.metadata.expireAtValue().value().get() == Instant.parse("2024-09-10T21:00:00Z")
+        }
+    }
+
+    def 'should delete a note'() {
+        given:
+        def noteId = noteService.createNote(createNoteRequest).block().id()
+
+        when:
+        noteService.deleteNote(noteId).block()
+
+        then:
+        repository.getById(NoteId.of(noteId)) == null
+    }
+
+    def 'should delete all notes'() {
+        given:
+        noteService.createNote(createNoteRequest).block().id()
+        noteService.createNote(createNoteRequest).block().id()
+        noteService.createNote(createNoteRequest).block().id()
+        noteService.createNote(createNoteRequest).block().id()
+
+        when:
+        noteService.deleteNotes().block()
+
+        then:
+        repository.size() == 0
+    }
+
+    def cleanup() {
+        repository.clear()
     }
 
 }

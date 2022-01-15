@@ -1,7 +1,6 @@
 package com.mkjb.notes.adapters.mongo;
 
 import com.mkjb.notes.domain.model.NoteUser;
-import com.mkjb.notes.domain.model.UserRole;
 
 public final class UserDocument {
 
@@ -17,11 +16,7 @@ public final class UserDocument {
     }
 
     static UserDocument of(NoteUser noteUser) {
-        return new UserDocument(noteUser.email(), noteUser.role().name());
-    }
-
-    NoteUser toDomain() {
-        return NoteUser.of(email, UserRole.valueOf(role));
+        return new UserDocument(noteUser.emailValue(), noteUser.roleValue().name());
     }
 
     public String getEmail() {

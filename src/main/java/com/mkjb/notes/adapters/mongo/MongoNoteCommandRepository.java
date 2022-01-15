@@ -15,10 +15,12 @@ import jakarta.inject.Singleton;
 import org.bson.BsonObjectId;
 import org.bson.BsonValue;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
+import reactor.util.context.ContextView;
 
 import javax.validation.ClockProvider;
 import java.time.Instant;
@@ -132,6 +134,22 @@ class MongoNoteCommandRepository implements NoteCommandRepository {
                         .doOnEach(logWithCtx(result -> log.info("Note with id '{}' successfully deleted", noteId)))
                         .then()
         );
+    }
+
+    @Override
+    public Mono<Void> delete() {
+        return Mono.deferContextual(ctx ->
+                Mono
+                        .from(mongoClient.collection().deleteMany(filterByOwner(ctx)))
+                        .onErrorMap(t -> NoteException.internal(ctx, t.getMessage()))
+                        .filter(this::hasSuccessfullyDeletedDocument)
+                        .doOnEach(logWithCtx(result -> log.info("Notes successfully deleted")))
+                        .then()
+        );
+    }
+
+    private Bson filterByOwner(final ContextView ctx) {
+        return null;
     }
 
     private boolean hasSuccessfullyUpdatedDocument(final UpdateResult updateResult) {
