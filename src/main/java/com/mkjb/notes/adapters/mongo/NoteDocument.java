@@ -30,16 +30,14 @@ public final class NoteDocument {
         this.version = version;
     }
 
-    Map<String, Object> toMap() {
+    Map<String, Object> toNoteUpdate() {
         return Map.of(
                 "id", id,
                 "title", title,
                 "content", content,
                 "users", users,
-//                "metadata", metadata,
                 "version", version
         );
-
     }
 
     @JsonIgnore

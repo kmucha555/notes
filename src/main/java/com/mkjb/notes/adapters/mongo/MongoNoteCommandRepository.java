@@ -15,7 +15,6 @@ import jakarta.inject.Singleton;
 import org.bson.BsonObjectId;
 import org.bson.BsonValue;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +23,6 @@ import reactor.core.publisher.Mono;
 import javax.validation.ClockProvider;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 
 import static com.mkjb.notes.settings.reactor.ContextLogger.logWithCtx;
 
@@ -46,24 +44,25 @@ class MongoNoteCommandRepository implements NoteCommandRepository {
     public Mono<NoteId> create(final NoteTitle noteTitle, final NoteContent noteContent, final List<NoteUser> noteUsers, final ExpireAt expireAt) {
         return Mono.deferContextual(ctx -> {
                     final var userDocuments = toUserDocuments(noteUsers);
-
                     final var createdAt = Instant.now(clockProvider.getClock());
 
-                    final var metadataDocument = MetadataDocument
-                            .metadataDocument()
-                            .withCreatedAt(createdAt)
-                            .withModifiedAt(createdAt)
-                            .withExpiredAt(expireAt.getOrNull())
-                            .build();
+                    final var metadataDocument =
+                            MetadataDocument
+                                    .metadataDocument()
+                                    .withCreatedAt(createdAt)
+                                    .withModifiedAt(createdAt)
+                                    .withExpiredAt(expireAt.getOrNull())
+                                    .build();
 
-                    final var noteDocument = NoteDocument
-                            .noteDocument()
-                            .withTitle(noteTitle.value())
-                            .withContent(noteContent.value())
-                            .withUsers(userDocuments)
-                            .withMetadata(metadataDocument)
-                            .withVersion(NoteVersion.INITIAL_VERSION.value())
-                            .build();
+                    final var noteDocument =
+                            NoteDocument
+                                    .noteDocument()
+                                    .withTitle(noteTitle.value())
+                                    .withContent(noteContent.value())
+                                    .withUsers(userDocuments)
+                                    .withMetadata(metadataDocument)
+                                    .withVersion(NoteVersion.INITIAL_VERSION.value())
+                                    .build();
 
                     return Mono
                             .from(mongoClient.collection().insertOne(noteDocument))
@@ -82,7 +81,6 @@ class MongoNoteCommandRepository implements NoteCommandRepository {
     public Mono<Void> update(final NoteId noteId, final Note note) {
         return Mono.deferContextual(ctx -> {
                     final var userDocuments = toUserDocuments(note.getUsers());
-
                     final var modifiedAt = Instant.now(clockProvider.getClock());
 
                     final var metadataDocument =
@@ -99,17 +97,11 @@ class MongoNoteCommandRepository implements NoteCommandRepository {
                                     .withTitle(note.getTitle().value())
                                     .withContent(note.getContent().value())
                                     .withUsers(userDocuments)
-                                    .withMetadata(metadataDocument)
                                     .withVersion(note.getVersion().increment())
                                     .build();
 
-                    final Map<String, Object> stringInstantMap = Map.of(
-                            "metadata.modifiedAt", Instant.now(clockProvider.getClock()),
-                            "metadata.expireAt", note.getMetadata().expireAtValue().getOrNull()
-                    );
                     final var filter = Filters.and(filterByNoteId(noteId), filterByVersion(note.getVersion()));
-
-                    final Bson combine = Updates.combine(new Document(noteDocument.toMap()), new Document(stringInstantMap));
+                    final var combine = Updates.combine(new Document(noteDocument.toNoteUpdate()), new Document(metadataDocument.toMetadataUpdate()));
                     final var updateDocument = new Document("$set", combine);
 
                     return Mono

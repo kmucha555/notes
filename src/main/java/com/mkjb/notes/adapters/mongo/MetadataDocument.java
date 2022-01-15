@@ -1,11 +1,11 @@
 package com.mkjb.notes.adapters.mongo;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public final class MetadataDocument {
-
-    private Map<String, Instant> metadata;
 
     private Instant createdAt;
     private Instant modifiedAt;
@@ -18,6 +18,17 @@ public final class MetadataDocument {
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
         this.expireAt = expireAt;
+    }
+
+    Map<String, Object> toMetadataUpdate() {
+        final HashMap<String, Object> metadata = new HashMap<>();
+        metadata.put("metadata.modifiedAt", modifiedAt);
+
+        if (Objects.nonNull(expireAt)) {
+            metadata.put("metadata.expireAt", expireAt);
+        }
+
+        return metadata;
     }
 
     public Instant getCreatedAt() {
