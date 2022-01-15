@@ -1,8 +1,7 @@
 package com.mkjb.notes.domain.ports
 
-
-import com.mkjb.notes.domain.model.Note
-import com.mkjb.notes.domain.model.NoteId
+import com.mkjb.notes.domain.model.*
+import org.bson.types.ObjectId
 import reactor.core.publisher.Mono
 
 import java.util.concurrent.ConcurrentHashMap
@@ -10,18 +9,22 @@ import java.util.concurrent.ConcurrentHashMap
 class InMemoryNoteCommandRepository implements NoteCommandRepository {
     private ConcurrentHashMap<NoteId, Note> repository = new ConcurrentHashMap<>()
 
+    def getById(NoteId noteId) {
+       return repository.get(noteId)
+    }
+
     @Override
-    Mono<NoteId> create(final Note note) {
-        def noteId = NoteId.of(UUID.randomUUID().toString())
+    Mono<NoteId> create(final NoteTitle noteTitle, final NoteContent noteContent, final List<NoteUser> noteUsers, final ExpireAt expireAt) {
+        def noteId = NoteId.of(ObjectId.get().toString())
 
         def createdNote = Note
                 .note()
                 .withId(noteId)
-                .withTitle(note.title)
-                .withContent(note.content)
-                .withUsers(note.users)
-                .withMetadata(note.metadata)
-                .withVersion(note.version)
+                .withTitle(noteTitle)
+                .withContent(noteContent)
+                .withUsers(noteUsers)
+                .withMetadata(NoteMetadata.of(expireAt))
+                .withVersion(NoteVersion.INITIAL_VERSION)
                 .build()
 
         repository.put(noteId, createdNote)
@@ -32,7 +35,7 @@ class InMemoryNoteCommandRepository implements NoteCommandRepository {
     @Override
     Mono<Void> update(final NoteId noteId, final Note note) {
         repository.put(noteId, note)
-        return Mono.just(note)
+        return Mono.just(noteId).then()
     }
 
     @Override
