@@ -5,8 +5,11 @@ import com.mkjb.notes.domain.model.NoteContent;
 import com.mkjb.notes.domain.model.NoteId;
 import com.mkjb.notes.domain.model.NoteTitle;
 import com.mkjb.notes.domain.ports.NoteFacade;
+import io.micronaut.security.authentication.Authentication;
 import jakarta.inject.Singleton;
 import reactor.core.publisher.Mono;
+
+import static com.mkjb.notes.domain.model.NoteUser.validateExactlyOneUserInOwnerRole;
 
 @Singleton
 class NoteService {
@@ -17,11 +20,13 @@ class NoteService {
         this.noteFacade = noteFacade;
     }
 
-    public Mono<NoteIdResponse> createNote(final NoteRequest noteRequest) {
+    public Mono<NoteIdResponse> createNote(final Authentication authentication, final NoteRequest noteRequest) {
         final var noteTitle = NoteTitle.of(noteRequest.title());
         final var noteContent = NoteContent.of(noteRequest.content());
         final var noteUsers = noteRequest.users().stream().map(NoteRequest.User::toDomain).toList();
         final var expireAt = ExpireAt.of(noteRequest.expireAt());
+
+        validateExactlyOneUserInOwnerRole(noteUsers);
 
         return noteFacade
                 .createNote(noteTitle, noteContent, noteUsers, expireAt)

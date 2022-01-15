@@ -7,9 +7,13 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.PathVariable;
 import io.micronaut.http.annotation.RequestBean;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.authentication.Authentication;
+import io.micronaut.security.rules.SecurityRule;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@Secured(SecurityRule.IS_AUTHENTICATED)
 @Controller("/notes")
 class NoteQueryController {
 
@@ -20,14 +24,14 @@ class NoteQueryController {
     }
 
     @Get
-    public Flux<NoteDocument> getNotes(@RequestBean RequestContext context) {
+    public Flux<NoteDocument> getNotes(Authentication authentication, @RequestBean RequestContext context) {
         return repository
                 .findAll()
                 .contextWrite(context.reactorContext());
     }
 
     @Get("/{noteId}")
-    public Mono<NoteDocument> getNoteById(@PathVariable String noteId, @RequestBean RequestContext context) {
+    public Mono<NoteDocument> getNoteById(Authentication authentication, @PathVariable String noteId, @RequestBean RequestContext context) {
         return repository
                 .find(NoteId.of(noteId))
                 .contextWrite(context.reactorContext());

@@ -4,10 +4,14 @@ import com.mkjb.notes.shared.dto.RequestContext;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.MutableHttpResponse;
 import io.micronaut.http.annotation.*;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.authentication.Authentication;
+import io.micronaut.security.rules.SecurityRule;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
 
+@Secured(SecurityRule.IS_AUTHENTICATED)
 @Controller("/notes")
 class NoteCommandController {
 
@@ -18,9 +22,9 @@ class NoteCommandController {
     }
 
     @Post
-    public Mono<NoteIdResponse> createNote(@Valid @Body NoteRequest noteRequest, @RequestBean RequestContext context) {
+    public Mono<NoteIdResponse> createNote(Authentication authentication, @Valid @Body NoteRequest noteRequest, @RequestBean RequestContext context) {
         return noteService
-                .createNote(noteRequest)
+                .createNote(authentication, noteRequest)
                 .contextWrite(context.reactorContext());
     }
 

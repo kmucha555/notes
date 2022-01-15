@@ -20,13 +20,13 @@ record NoteRequest(String title, String content,
                 .note()
                 .withTitle(NoteTitle.of(title))
                 .withContent(NoteContent.of(content))
-                .withUsers(toDomainUsers())
+                .withUsers(toNoteUsers())
                 .withMetadata(NoteMetadata.of(ExpireAt.of(expireAt)))
                 .withVersion(NoteVersion.of(version))
                 .build();
     }
 
-    private List<NoteUser> toDomainUsers() {
+    private List<NoteUser> toNoteUsers() {
         return users.stream().map(User::toDomain).toList();
     }
 

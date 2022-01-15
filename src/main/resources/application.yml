@@ -2,6 +2,20 @@ micronaut:
   application:
     name: notes
 ---
+micronaut:
+  security:
+    authentication: idtoken
+    oauth2:
+      clients:
+        google:
+          client-id: '${OAUTH_CLIENT_ID:661817635087-4jdsbddvft63kgptrs56sp8ieerddgp9.apps.googleusercontent.com}'
+          client-secret: '${OAUTH_CLIENT_SECRET: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}'
+          openid:
+            issuer: 'https://accounts.google.com'
+    endpoints:
+      logout:
+        get-allowed: true
+---
 mongodb:
   cluster:
     maxWaitQueueSize: 5

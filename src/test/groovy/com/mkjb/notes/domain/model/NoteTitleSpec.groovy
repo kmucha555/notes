@@ -33,7 +33,7 @@ class NoteTitleSpec extends Specification {
         then:
         def exception = thrown(NoteValidationException)
         and:
-        exception.message == 'Note title must not be empty'
+        exception.message == 'The note title must not be empty'
 
         where:
         title << [null, '', ' ']
@@ -49,7 +49,7 @@ class NoteTitleSpec extends Specification {
         then:
         def exception = thrown(NoteValidationException)
         and:
-        exception.message == 'Note title too long'
+        exception.message == 'The note title too long'
     }
 
 }

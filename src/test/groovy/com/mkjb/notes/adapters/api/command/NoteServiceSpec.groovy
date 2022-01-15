@@ -30,6 +30,23 @@ class NoteServiceSpec extends Specification implements NoteCommandTestData {
         }
     }
 
+    def 'should thrown exception when user is not in OWNER role create a note'() {
+        when:
+        def noteId = noteService.createNote(createNoteRequest).block().id()
+
+        then:
+        def createdNote = repository.getById(NoteId.of(noteId))
+
+        verifyAll {
+            createdNote.title.value() == 'Test Note'
+            createdNote.content.value() == 'Lorem ipsum'
+            createdNote.users.get(0).emailValue() == 'john.doe@supernote.com'
+            createdNote.users.get(0).roleValue().toString() == 'OWNER'
+            createdNote.version.value() == 0
+            createdNote.metadata.expireAtValue().value().get() == Instant.parse("2023-06-01T21:00:00Z")
+        }
+    }
+
     def 'should update a note'() {
         given:
         def noteId = noteService.createNote(createNoteRequest).block().id()
@@ -64,9 +81,9 @@ class NoteServiceSpec extends Specification implements NoteCommandTestData {
     def 'should delete all notes'() {
         given:
         noteService.createNote(createNoteRequest).block().id()
-        noteService.createNote(createNoteRequest).block().id()
-        noteService.createNote(createNoteRequest).block().id()
-        noteService.createNote(createNoteRequest).block().id()
+        noteService.createNote(authentication, createNoteRequest).block().id()
+        noteService.createNote(authentication, createNoteRequest).block().id()
+        noteService.createNote(authentication, createNoteRequest).block().id()
 
         when:
         noteService.deleteNotes().block()

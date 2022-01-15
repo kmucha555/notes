@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
 
+import static com.mkjb.notes.domain.model.NoteUser.validateExactlyOneUserInOwnerRole;
+
 public final class Note {
     private final NoteId id;
     private final NoteTitle title;
@@ -14,6 +16,9 @@ public final class Note {
 
     private Note(final NoteId id, final NoteTitle title, final NoteContent content,
                  final List<NoteUser> users, final NoteMetadata metadata, final NoteVersion version) {
+
+        validateExactlyOneUserInOwnerRole(users);
+
         this.id = id;
         this.title = title;
         this.content = content;
