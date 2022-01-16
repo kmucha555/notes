@@ -1,0 +1,28 @@
+version: '3.9'
+
+networks:
+  notes-bridge:
+    driver: bridge
+
+services:
+  notes:
+    build:
+      context: .
+    container_name: notes
+    restart: on-failure
+    depends_on:
+      - mongodb
+    networks:
+      - notes-bridge
+    ports:
+      - "8080:8080"
+
+  mongodb:
+    image: mongo:4.4
+    container_name: mongo-notes
+    networks:
+      - notes-bridge
+    ports:
+      - "27017-27019:27017-27019"
+    volumes:
+      - /tmp/Docker/mongodb:/data/db

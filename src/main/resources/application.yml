@@ -15,18 +15,25 @@ micronaut:
     endpoints:
       logout:
         get-allowed: true
+    intercept-url-map:
+      - pattern: /swagger/**
+        http-method: GET
+        access:
+          - isAnonymous()
+      - pattern: /swagger-ui/**
+        http-method: GET
+        access:
+          - isAnonymous()
 ---
 micronaut:
   router:
     static-resources:
       swagger:
         enabled: true
-        sensitive: false
         paths: classpath:META-INF/swagger
         mapping: /swagger/**
       swagger-ui:
         enabled: true
-        sensitive: false
         paths: classpath:META-INF/swagger/views/swagger-ui
         mapping: /swagger-ui/**
 ---
@@ -44,7 +51,7 @@ mongodb:
     connectionPool:
       maxSize: 20
     server-selection-timeout: 5s
-  uri: mongodb://localhost:27017
+  uri: mongodb://mongodb:27017
   database: notes
   options:
     maxConnectionIdleTime: 5s

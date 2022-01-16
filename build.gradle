@@ -2,6 +2,7 @@ plugins {
     id("groovy") 
     id("com.github.johnrengelman.shadow") version "7.1.0"
     id("io.micronaut.application") version "3.0.2"
+    id("com.avast.gradle.docker-compose") version "0.14.13"
 }
 
 version = "0.1"
@@ -44,6 +45,9 @@ dependencies {
 
 }
 
+dockerCompose {
+    useComposeFiles = ['docker-compose.yml']
+}
 
 application {
     mainClass.set("com.mkjb.Application")

@@ -1,5 +1,6 @@
 package com.mkjb.notes.domain.ports;
 
+import com.mkjb.notes.domain.NotePublisher;
 import com.mkjb.notes.domain.model.*;
 import jakarta.inject.Singleton;
 import reactor.core.publisher.Flux;
@@ -11,9 +12,11 @@ import java.util.List;
 public class NoteFacade {
 
     private final NoteCommandRepository noteRepository;
+    private final NotePublisher notePublisher;
 
-    public NoteFacade(final NoteCommandRepository noteRepository) {
+    public NoteFacade(final NoteCommandRepository noteRepository, final NotePublisher notePublisher) {
         this.noteRepository = noteRepository;
+        this.notePublisher = notePublisher;
     }
 
     public Mono<NoteId> createNote(final NoteTitle noteTitle, final NoteContent noteContent, final NoteUser noteUser, final NoteExpireAt expireAt) {
@@ -41,6 +44,8 @@ public class NoteFacade {
     }
 
     public Mono<Void> shareNote(final NoteId noteId, final NoteUser noteUserToAdd) {
-        return noteRepository.share(noteId, noteUserToAdd);
+        return noteRepository
+                .share(noteId, noteUserToAdd)
+                .then(notePublisher.notify(noteId, noteUserToAdd));
     }
 }

@@ -33,7 +33,7 @@ class NoteContentSpec extends Specification {
         then:
         def exception = thrown(NoteValidationException)
         and:
-        exception.message == 'Note content must not be empty'
+        exception.message == 'The note content must not be empty'
 
         where:
         content << [null, '', ' ']
@@ -49,7 +49,7 @@ class NoteContentSpec extends Specification {
         then:
         def exception = thrown(NoteValidationException)
         and:
-        exception.message == 'Note content too long'
+        exception.message == 'The note content too long'
     }
 
 }

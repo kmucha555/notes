@@ -1,26 +1,23 @@
-## Micronaut 3.2.3 Documentation
+# Super Notes App
 
-- [User Guide](https://docs.micronaut.io/3.2.3/guide/index.html)
-- [API Reference](https://docs.micronaut.io/3.2.3/api/index.html)
-- [Configuration Reference](https://docs.micronaut.io/3.2.3/guide/configurationreference.html)
-- [Micronaut Guides](https://guides.micronaut.io/index.html)
----
+## Technologies
 
-## Feature reactor documentation
+* Java 17
+* Micronaut
+* MongoDB
 
-- [Micronaut Reactor documentation](https://micronaut-projects.github.io/micronaut-reactor/snapshot/guide/index.html)
+## Dependencies
 
-## Feature testcontainers documentation
+* MongoDB
 
-- [https://www.testcontainers.org/](https://www.testcontainers.org/)
+## How to start?
 
-## Feature http-client documentation
+* ./gradlew composeUp
 
-- [Micronaut HTTP Client documentation](https://docs.micronaut.io/latest/guide/index.html#httpClient)
+## API Documentation
+After service startup the documentation is reachable under:
 
-## Feature mongo-reactive documentation
+* http://localhost:8080/swagger/super-notes-1.0.0.yml
+* http://localhost:8080/swagger-ui/index.html
 
-- [Micronaut MongoDB Reactive Driver documentation](https://micronaut-projects.github.io/micronaut-mongodb/latest/guide/index.html)
-
-- [https://docs.mongodb.com](https://docs.mongodb.com)
-
+You can use Swagger documentation to play with an API. 

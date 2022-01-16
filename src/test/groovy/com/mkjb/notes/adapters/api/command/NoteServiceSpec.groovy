@@ -1,5 +1,7 @@
 package com.mkjb.notes.adapters.api.command
 
+import com.mkjb.notes.adapters.notifications.InMemoryEmailNotifier
+import com.mkjb.notes.domain.NotePublisher
 import com.mkjb.notes.domain.model.NoteId
 import com.mkjb.notes.domain.ports.InMemoryNoteCommandRepository
 import com.mkjb.notes.domain.ports.NoteFacade
@@ -14,7 +16,9 @@ import java.time.Instant
 class NoteServiceSpec extends Specification implements NoteCommandTestData {
 
     def repository = new InMemoryNoteCommandRepository()
-    def noteFacade = new NoteFacade(repository)
+    def notifier = new InMemoryEmailNotifier()
+    def publisher = new NotePublisher(notifier)
+    def noteFacade = new NoteFacade(repository, publisher)
     def noteService = new NoteService(noteFacade)
     def owner = Authentication.build('owner john', ['email': 'john.doe@supernote.com'])
     def editor = Authentication.build('editor mark', ['email': 'editor.doe@supernote.com'])
@@ -221,6 +225,21 @@ class NoteServiceSpec extends Specification implements NoteCommandTestData {
 
         where:
         invitedUser << [inviteViewer, inviteEditor, inviteOwner]
+    }
+
+    def '1should share a note with role #invitedUser'() {
+        given:
+        def noteId = noteService.createNote(owner, createNoteRequest).block().id()
+
+        when:
+        noteService.invite(owner, noteId, inviteEditor).block()
+
+        then:
+        def noteUser = notifier.get(NoteId.of(noteId))
+        verifyAll {
+            noteUser.email().value() == inviteEditor.email()
+            noteUser.role().name() == inviteEditor.role()
+        }
     }
 
     def 'should invite already invited user in different role'() {

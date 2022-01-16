@@ -1,4 +1,4 @@
-package com.mkjb.notes;
+package com.mkjb;
 
 import io.micronaut.runtime.Micronaut;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;

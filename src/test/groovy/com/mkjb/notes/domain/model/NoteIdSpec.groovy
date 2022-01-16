@@ -22,7 +22,7 @@ class NoteIdSpec extends Specification {
         then:
         def exception = thrown(NoteValidationException)
         and:
-        exception.message == 'Note id must not be empty'
+        exception.message == 'The note id must not be empty'
 
         where:
         id << [null, '', ' ']
@@ -35,7 +35,7 @@ class NoteIdSpec extends Specification {
         then:
         def exception = thrown(NoteValidationException)
         and:
-        exception.message == 'Note id must be in proper format'
+        exception.message == 'The note id must be in proper format'
     }
 
 }
