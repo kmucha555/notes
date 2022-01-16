@@ -1,5 +1,8 @@
 package com.mkjb.notes.adapters.mongo;
 
+import com.mkjb.notes.domain.model.NoteExpireAt;
+import com.mkjb.notes.domain.model.NoteMetadata;
+
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,10 +17,14 @@ public final class MetadataDocument {
     public MetadataDocument() {
     }
 
-    MetadataDocument(final Instant createdAt, final Instant modifiedAt, final Instant expireAt) {
+    private MetadataDocument(final Instant createdAt, final Instant modifiedAt, final Instant expireAt) {
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
         this.expireAt = expireAt;
+    }
+
+    public NoteMetadata toDomain() {
+        return NoteMetadata.of(NoteExpireAt.of(expireAt));
     }
 
     Map<String, Object> toMetadataUpdate() {

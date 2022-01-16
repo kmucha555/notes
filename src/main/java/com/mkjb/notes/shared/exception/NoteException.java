@@ -6,8 +6,8 @@ import reactor.util.context.ContextView;
 
 public class NoteException extends RuntimeException {
 
-    private final ContextView context;
-    private final NoteId noteId;
+    private final transient ContextView context;
+    private final transient NoteId noteId;
     private final HttpStatus status;
     private final String message;
 
@@ -33,6 +33,10 @@ public class NoteException extends RuntimeException {
 
     public static NoteException conflict(final ContextView context, final NoteId noteId) {
         return new NoteException(context, noteId, HttpStatus.CONFLICT, "The given note id version does not exist");
+    }
+
+    public static NoteException forbidden(final ContextView context) {
+        return new NoteException(context, null, HttpStatus.FORBIDDEN, "You are not authorized to perform the operation");
     }
 
     public ContextView getContext() {

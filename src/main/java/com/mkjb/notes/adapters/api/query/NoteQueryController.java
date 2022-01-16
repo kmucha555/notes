@@ -26,14 +26,14 @@ class NoteQueryController {
     @Get
     public Flux<NoteDocument> getNotes(Authentication authentication, @RequestBean RequestContext context) {
         return repository
-                .findAll()
+                .findAll(authentication)
                 .contextWrite(context.reactorContext());
     }
 
     @Get("/{noteId}")
     public Mono<NoteDocument> getNoteById(Authentication authentication, @PathVariable String noteId, @RequestBean RequestContext context) {
         return repository
-                .find(NoteId.of(noteId))
+                .findById(authentication, NoteId.of(noteId))
                 .contextWrite(context.reactorContext());
     }
 }

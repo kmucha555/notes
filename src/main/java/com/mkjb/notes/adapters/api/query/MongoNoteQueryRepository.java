@@ -3,8 +3,11 @@ package com.mkjb.notes.adapters.api.query;
 import com.mkjb.notes.adapters.mongo.NoteDocument;
 import com.mkjb.notes.domain.model.NoteId;
 import com.mkjb.notes.settings.mongo.MongoDbClient;
+import com.mkjb.notes.shared.dto.AuthenticatedUser;
 import com.mkjb.notes.shared.dto.RequestContext;
 import com.mkjb.notes.shared.exception.NoteException;
+import com.mongodb.client.model.Filters;
+import io.micronaut.security.authentication.Authentication;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,24 +28,29 @@ class MongoNoteQueryRepository implements NoteQueryRepository {
     }
 
     @Override
-    public Mono<NoteDocument> find(final NoteId noteId) {
-        return Mono.deferContextual(ctx ->
-                Mono
-                        .from(mongoClient.collection().find(findByNoteId(noteId)))
-                        .onErrorMap(t -> NoteException.internal(ctx, noteId, t.getMessage()))
-                        .doOnEach(logWithCtx(noteDocument -> log.debug("Note with id '{}' fetched", noteDocument.getId())))
-        );
+    public Mono<NoteDocument> findById(final Authentication authentication, final NoteId noteId) {
+        return Mono.deferContextual(ctx -> {
+            final var authUser = AuthenticatedUser.of(authentication);
+
+            return Mono
+                    .from(mongoClient.collection().find(Filters.and(findByNoteId(noteId), findByUserEmailId(authUser))))
+                    .onErrorMap(t -> NoteException.internal(ctx, noteId, t.getMessage()))
+                    .switchIfEmpty(Mono.error(NoteException.notFound(ctx, noteId)))
+                    .doOnEach(logWithCtx(noteDocument -> log.debug("Note with id '{}' fetched", noteDocument.getId())));
+        });
     }
 
     @Override
-    public Flux<NoteDocument> findAll() {
+    public Flux<NoteDocument> findAll(final Authentication authentication) {
         return Flux.deferContextual(ctx -> {
             final var context = ctx.get(RequestContext.class);
+            final var authUser = AuthenticatedUser.of(authentication);
+
             return Flux
                     .from(
                             mongoClient
                                     .collection()
-                                    .find()
+                                    .find(findByUserEmailId(authUser))
                                     .sort(sort(context))
                                     .skip(pageNumber(context))
                                     .limit(pageSize(context))

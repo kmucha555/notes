@@ -2,48 +2,53 @@ package com.mkjb.notes.domain.model;
 
 import com.mkjb.notes.shared.exception.NoteValidationException;
 
-import java.util.List;
+import java.util.Objects;
 
 public final class NoteUser {
 
-    private final String email;
-    private final UserRole role;
+    private final NoteUserEmail email;
+    private final NoteUserRole userRole;
 
-    private NoteUser(String email, String role) {
+    private NoteUser(NoteUserEmail email, final NoteUserRole userRole) {
         this.email = email;
-        this.role = parseRole(role);
+        this.userRole = userRole;
     }
 
-    public static NoteUser of(String email, String role) {
-        return new NoteUser(email, role);
+    public static NoteUser of(final NoteUserEmail noteUserEmail, final NoteUserRole role) {
+        return new NoteUser(noteUserEmail, role);
     }
 
-    public static void validateExactlyOneUserInOwnerRole(final List<NoteUser> users) {
-        final long numberOfNoteOwners = users.stream().map(NoteUser::roleValue).filter(userRole -> userRole == UserRole.OWNER).count();
-
-        if (numberOfNoteOwners > 1) {
-            throw NoteValidationException.TOO_MANY_OWNERS;
-        }
-
-        if (numberOfNoteOwners < 1) {
-            throw NoteValidationException.TOO_FEW_OWNERS;
-        }
+    public static NoteUser of(final String email, final String role) {
+        return new NoteUser(NoteUserEmail.of(email), parseRole(role));
     }
 
-    public String emailValue() {
+    public NoteUserEmail email() {
         return email;
     }
 
-    public UserRole roleValue() {
-        return role;
+    public NoteUserRole role() {
+        return userRole;
     }
 
-    private UserRole parseRole(final String role) {
+
+    private static NoteUserRole parseRole(final String role) {
         try {
-            return UserRole.valueOf(role);
+            return NoteUserRole.valueOf(role);
         } catch (IllegalArgumentException e) {
             throw NoteValidationException.NOTE_USER_ROLE_NOT_EXISTS;
         }
     }
 
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        final NoteUser noteUser = (NoteUser) o;
+        return Objects.equals(email, noteUser.email);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(email);
+    }
 }

@@ -10,13 +10,17 @@ public final class UserDocument {
     public UserDocument() {
     }
 
-    UserDocument(final String email, final String role) {
+    private UserDocument(final String email, final String role) {
         this.email = email;
         this.role = role;
     }
 
-    static UserDocument of(NoteUser noteUser) {
-        return new UserDocument(noteUser.emailValue(), noteUser.roleValue().name());
+    static UserDocument of(final NoteUser noteUser) {
+        return new UserDocument(noteUser.email().value(), noteUser.role().name());
+    }
+
+    NoteUser toDomain() {
+        return NoteUser.of(email, role);
     }
 
     public String getEmail() {

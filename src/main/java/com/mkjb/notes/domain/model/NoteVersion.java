@@ -1,6 +1,7 @@
 package com.mkjb.notes.domain.model;
 
 public final class NoteVersion {
+
     public static final NoteVersion INITIAL_VERSION = new NoteVersion(0);
 
     private final int version;

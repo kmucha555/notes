@@ -2,6 +2,7 @@ package com.mkjb.notes.adapters.mongo;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.mkjb.notes.domain.model.*;
 import org.bson.types.ObjectId;
 
 import java.util.List;
@@ -19,9 +20,9 @@ public final class NoteDocument {
     public NoteDocument() {
     }
 
-    NoteDocument(final ObjectId id, final String title, final String content,
-                 final List<UserDocument> users, final MetadataDocument metadata,
-                 final int version) {
+    private NoteDocument(final ObjectId id, final String title, final String content,
+                         final List<UserDocument> users, final MetadataDocument metadata,
+                         final int version) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -35,9 +36,25 @@ public final class NoteDocument {
                 "id", id,
                 "title", title,
                 "content", content,
-                "users", users,
                 "version", version
         );
+    }
+
+    Note toDomain() {
+        final var domainUsers = users
+                .stream()
+                .map(UserDocument::toDomain)
+                .toList();
+
+        return Note
+                .note()
+                .withId(NoteId.of(id.toString()))
+                .withTitle(NoteTitle.of(title))
+                .withContent(NoteContent.of(content))
+                .withUsers(domainUsers)
+                .withMetadata(metadata.toDomain())
+                .withVersion(NoteVersion.of(version))
+                .build();
     }
 
     @JsonIgnore

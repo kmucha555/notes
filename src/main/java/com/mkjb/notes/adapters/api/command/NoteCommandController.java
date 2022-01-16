@@ -22,33 +22,45 @@ class NoteCommandController {
     }
 
     @Post
-    public Mono<NoteIdResponse> createNote(Authentication authentication, @Valid @Body NoteRequest noteRequest, @RequestBean RequestContext context) {
+    public Mono<NoteIdResponse> createNote(Authentication authentication, @Valid @Body NoteRequest noteRequest,
+                                           @RequestBean RequestContext context) {
         return noteService
                 .createNote(authentication, noteRequest)
                 .contextWrite(context.reactorContext());
     }
 
     @Put("/{noteId}")
-    public Mono<MutableHttpResponse<Object>> updateNote(@PathVariable String noteId, @Valid @Body NoteRequest noteRequest, @RequestBean RequestContext context) {
+    public Mono<MutableHttpResponse<Object>> updateNote(Authentication authentication, @PathVariable String noteId,
+                                                        @Valid @Body NoteRequest noteRequest, @RequestBean RequestContext context) {
         return noteService
-                .updateNote(noteId, noteRequest)
+                .updateNote(authentication, noteId, noteRequest)
                 .thenReturn(HttpResponse.noContent())
                 .contextWrite(context.reactorContext());
     }
 
     @Delete("/{noteId}")
-    public Mono<MutableHttpResponse<Object>> deleteNote(@PathVariable String noteId, @RequestBean RequestContext context) {
+    public Mono<MutableHttpResponse<Object>> deleteNote(Authentication authentication, @PathVariable String noteId,
+                                                        @RequestBean RequestContext context) {
         return noteService
-                .deleteNote(noteId)
+                .deleteNote(authentication, noteId)
                 .thenReturn(HttpResponse.noContent())
                 .contextWrite(context.reactorContext());
     }
 
     @Delete
-    public Mono<MutableHttpResponse<Object>> deleteNotes(@RequestBean RequestContext context) {
+    public Mono<MutableHttpResponse<Object>> deleteNotes(Authentication authentication, @RequestBean RequestContext context) {
         return noteService
-                .deleteNotes()
-                .thenReturn(HttpResponse.noContent())
+                .deleteNotes(authentication)
+                .then(Mono.just(HttpResponse.noContent()))
+                .contextWrite(context.reactorContext());
+    }
+
+    @Post("/{noteId}/invitations")
+    public Mono<MutableHttpResponse<Object>> inviteUserToNote(Authentication authentication, @PathVariable String noteId,
+                                                              @Valid @Body InviteRequest inviteRequest, @RequestBean RequestContext context) {
+        return noteService
+                .invite(authentication, noteId, inviteRequest)
+                .then(Mono.just(HttpResponse.accepted()))
                 .contextWrite(context.reactorContext());
     }
 

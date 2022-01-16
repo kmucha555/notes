@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
 
-import static com.mkjb.notes.domain.model.NoteUser.validateExactlyOneUserInOwnerRole;
-
 public final class Note {
     private final NoteId id;
     private final NoteTitle title;
@@ -17,8 +15,6 @@ public final class Note {
     private Note(final NoteId id, final NoteTitle title, final NoteContent content,
                  final List<NoteUser> users, final NoteMetadata metadata, final NoteVersion version) {
 
-        validateExactlyOneUserInOwnerRole(users);
-
         this.id = id;
         this.title = title;
         this.content = content;
@@ -27,27 +23,53 @@ public final class Note {
         this.version = version;
     }
 
-    public NoteId getId() {
+    public boolean isAbleToUpdateNote(final NoteUserEmail noteUserEmail) {
+        return users
+                .stream()
+                .filter(noteUser -> noteUser.email().equals(noteUserEmail))
+                .anyMatch(this::rolesThatCanUpdateNote);
+    }
+
+    private boolean rolesThatCanUpdateNote(final NoteUser noteUser) {
+        return noteUser.role() == NoteUserRole.OWNER || noteUser.role() == NoteUserRole.EDITOR;
+    }
+
+    public boolean isAbleToShareNote(final NoteUserEmail noteUserEmail) {
+        return isAbleToDeleteNote(noteUserEmail);
+    }
+
+    public boolean isAbleToDeleteNote(final NoteUserEmail noteUserEmail) {
+        return users
+                .stream()
+                .filter(noteUser -> noteUser.email().equals(noteUserEmail))
+                .anyMatch(this::rolesThatCanDeleteNote);
+    }
+
+    private boolean rolesThatCanDeleteNote(final NoteUser noteUser) {
+        return noteUser.role() == NoteUserRole.OWNER;
+    }
+
+    public NoteId id() {
         return id;
     }
 
-    public NoteTitle getTitle() {
+    public NoteTitle title() {
         return title;
     }
 
-    public NoteContent getContent() {
+    public NoteContent content() {
         return content;
     }
 
-    public List<NoteUser> getUsers() {
+    public List<NoteUser> users() {
         return users;
     }
 
-    public NoteMetadata getMetadata() {
+    public NoteMetadata metadata() {
         return metadata;
     }
 
-    public NoteVersion getVersion() {
+    public NoteVersion version() {
         return version;
     }
 
@@ -83,9 +105,6 @@ public final class Note {
         private List<NoteUser> users;
         private NoteMetadata metadata;
         private NoteVersion version;
-
-        public NoteBuilder() {
-        }
 
         public NoteBuilder withId(final NoteId id) {
             this.id = id;
