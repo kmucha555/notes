@@ -21,6 +21,7 @@ micronaut {
 }
 
 dependencies {
+    annotationProcessor("io.micronaut.openapi:micronaut-openapi")
     annotationProcessor("io.micronaut:micronaut-http-validation")
     annotationProcessor("io.micronaut.security:micronaut-security-annotations")
     implementation("io.micronaut:micronaut-http-client")
@@ -28,6 +29,8 @@ dependencies {
     implementation("io.micronaut.mongodb:micronaut-mongo-reactive")
     implementation("io.micronaut.reactor:micronaut-reactor")
     implementation("io.micronaut.reactor:micronaut-reactor-http-client")
+    implementation("io.micronaut.micrometer:micronaut-micrometer-core")
+    implementation("io.micronaut:micronaut-management")
     implementation("jakarta.annotation:jakarta.annotation-api")
     implementation("io.micronaut.security:micronaut-security")
     implementation("io.micronaut.security:micronaut-security-jwt")
@@ -37,6 +40,7 @@ dependencies {
     testImplementation("org.testcontainers:spock")
     testImplementation("org.testcontainers:testcontainers")
     implementation("io.micronaut:micronaut-validation")
+    implementation("io.swagger.core.v3:swagger-annotations")
 
 }
 

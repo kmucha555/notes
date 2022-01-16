@@ -20,6 +20,12 @@
         <appender-ref ref="STDOUT_2"/>
     </logger>
 
+<!--        <logger name="org.mongodb" level="DEBUG" additivity="false">-->
+<!--            <appender-ref ref="STDOUT"/>-->
+<!--        </logger>-->
+
+<!--        <logger name="io.micronaut.http.client" level="TRACE"/>-->
+
     <root level="info">
         <appender-ref ref="STDOUT" />
     </root>

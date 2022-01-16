@@ -5,6 +5,7 @@ import io.micronaut.core.annotation.Creator;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.http.annotation.Header;
 import io.micronaut.http.annotation.QueryValue;
+import io.swagger.v3.oas.annotations.Parameter;
 import reactor.util.context.Context;
 import reactor.util.context.ContextView;
 import reactor.util.function.Tuple2;
@@ -19,17 +20,26 @@ import java.util.StringJoiner;
 public class RequestContext {
 
     @Header(defaultValue = "")
+    @Parameter(required = false, description = "If not provided will be generated")
     private final String requestId;
 
     @Positive
     @QueryValue(defaultValue = "1")
+    @Parameter(required = false)
     private final int pageNumber;
 
     @Positive
     @QueryValue(defaultValue = "20")
+    @Parameter(required = false)
     private final int pageSize;
 
     @QueryValue(defaultValue = "title:ASC")
+    @Parameter(required = false, description = """
+            List of properties used to sort the results, separated by commas.
+            Possible values:
+            * `{fieldName}:ASC`
+            * `{fieldName}:DESC`
+            """)
     private final String sort;
 
     @Creator
