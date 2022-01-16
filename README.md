@@ -12,7 +12,8 @@
 
 ## How to start?
 
-* ./gradlew composeUp
+* docker compose build
+* docker compose up
 
 ## API Documentation
 After service startup the documentation is reachable under:
