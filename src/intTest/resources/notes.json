@@ -1,0 +1,23 @@
+[
+  {
+    "title": "My First Note",
+    "content": "Lorem Ipsum",
+    "users": [
+      {
+        "email": "john.doe@supernote.com",
+        "role": "OWNER"
+      },
+      {
+        "email": "viewer.doe@supernote.com",
+        "role": "VIEWER"
+      }
+    ],
+    "metadata": {
+      "createdAt": "2022-01-16T18:51:43.905Z",
+      "modifiedAt": "2022-01-16T18:54:31.384Z",
+      "expireAt": "2023-01-16T18:51:20.085Z"
+    },
+    "version": 0,
+    "id": "61e4693fe0bb725cf7584b66"
+  }
+]

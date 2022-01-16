@@ -1,0 +1,31 @@
+sourceSets {
+    intTest {
+        resources.srcDir "$projectDir/src/main/resources"
+        compileClasspath += main.output
+        runtimeClasspath += main.output
+    }
+}
+
+configurations {
+    intTestImplementation.extendsFrom testImplementation
+    intTestRuntimeOnly.extendsFrom runtimeOnly
+}
+
+    task integrationTest(type: Test) {
+    description = 'Runs integration tests.'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.intTest.output.classesDirs
+    classpath = sourceSets.intTest.runtimeClasspath
+    shouldRunAfter test
+}
+
+dependencies {
+    intTestImplementation("io.micronaut:micronaut-inject-groovy")
+    intTestImplementation("org.testcontainers:testcontainers")
+    intTestImplementation("org.testcontainers:spock")
+    intTestImplementation("org.testcontainers:mongodb")
+    intTestImplementation("org.testcontainers:gcloud")
+}
+
+check.dependsOn integrationTest

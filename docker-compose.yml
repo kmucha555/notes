@@ -8,7 +8,7 @@ services:
   notes:
     build:
       context: .
-    container_name: notes
+    container_name: notes-app
     restart: on-failure
     depends_on:
       - mongodb
@@ -19,7 +19,7 @@ services:
 
   mongodb:
     image: mongo:4.4
-    container_name: mongo-notes
+    container_name: mongo-notes-db
     networks:
       - notes-bridge
     ports:
