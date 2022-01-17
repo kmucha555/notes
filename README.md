@@ -12,8 +12,14 @@
 
 ## How to start?
 
-* docker compose build
-* docker compose up
+### Locally
+* Ensure that you have MongoDB running on localhost:27017
+* Set env variable: `MICRONAUT_ENVIRONMENTS=local`
+* Run `./gradlew run`
+
+### Using docker
+* `docker compose build`
+* `docker compose up`
 
 ## API Documentation
 After service startup the documentation is reachable under:
